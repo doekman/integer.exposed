@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="https://integer.exposed" />
+    <script src="lib/vue.global.prod.js"></script>
+    <!-- "defer" means that the DOM gets loaded before the script is executed -->
+    <script src="script.js" defer></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Integer Exposed</title>
+  </head>
+<style>
+
+body {
+  font-family: sans-serif;
+}
+
+#app {
+  width: 100%;
+  max-width: 20rem;
+  margin: .5rem auto;
+  box-sizing: border-box;
+}
+
+.toggle {
+  color: #555;
+  border: 1px solid #555;
+  padding: .3rem .7rem;
+  cursor: pointer;
+}
+
+.toggle.selected {
+  background-color: #555;
+  color: #fff;
+}
+
+.toggle:first-child {
+  border-radius: 7px 0 0 7px;
+}
+.toggle:last-child {
+  border-radius: 0 7px 7px 0;
+}
+.input-container {
+  display: flex;
+  align-items: center;
+}
+
+.input-box {
+  text-align: right;
+  font-size: 20px;
+  height: 25px;
+  background: #FBFBFB;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  outline: none;
+  padding: 5px;
+  display: inline-block;
+  font-family: monospace;
+  margin: 0;
+  min-width: 0;
+  flex-grow: 1;
+  max-width: 100%;
+  width: 18rem;
+}
+
+.input-box:focus {
+  box-shadow:  0px 0px 2px 1px rgba(0, 0, 0, 0.25);
+}
+
+.title {
+  text-align: left;
+  font-family: Helvetica, Arial, Sans-Serif;
+  font-size: 15px;
+  padding: 15px 4px 4px 4px;
+  color: #888;
+  font-weight: normal;
+}
+
+
+.button-wrapper {
+  text-align: center;
+  margin-top: .5em;
+  display: flex;
+  width: 18rem;
+  max-width: 100%;
+  margin: auto;
+  justify-content: center;
+}
+
+.button {
+  flex-grow: 1;
+  height: 2.3em;
+  font-size: 1em;
+  padding: 0 5px;
+  margin: .25em;
+  text-align: center;
+  line-height: .75em;
+  border: .8px solid #ddd;
+  cursor: pointer;
+  background-color: transparent;
+  border-radius: 15%;
+  color: #999;
+  touch-action: manipulation;
+  font-family: Menlo, monospace;
+  position: relative;
+}
+
+.button:active {
+  background-color: #eee;
+}
+
+/* tooltip */ 
+
+@media (min-width: 700px) {
+.button:hover::before,
+.button:hover::after {
+  content: '';
+  position: absolute;
+  display: block;
+  opacity: 1;
+}
+
+.button:hover::before {
+  content: attr(data-tooltip);
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+.button:hover::after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #333;
+  top: calc(100% + 3px);
+  left: calc(50% - 5px);
+}
+}
+
+hr {
+  width: 50rem;
+  max-width: 100%;
+  border: 0;
+  border-top: 1px solid #ddd;
+}
+
+.bit-pattern-wrapper {
+  margin: 1em 0;
+}
+.bit {
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: underline;
+  padding: 2px;
+  font-family: Menlo, monospace;
+  font-size: 24px;
+  font-weight: bold;
+  user-select: none;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /
+  touch-action: manipulation;
+}
+
+.byte {
+  margin-right: .5em;
+  display: inline-block;
+}
+.doublebyte {
+  display: inline-block;
+}
+.byte {
+  white-space: nowrap;
+}
+.bit-wrapper {
+  text-align: center;
+}
+body {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: .5em;
+  margin: 0;
+  box-sizing: border-box;
+}
+footer {
+  color: #ccc;
+  font-size: .8em;
+  text-align: center;
+}
+footer a {
+  color: #ccc;
+}
+footer a:hover {
+  color: #aaa;
+}
+</style>
+  <body>
+    <div id="app">
+      <div style="display: flex;">
+        <div style="margin: auto;">
+          <span class="toggle" :class='{"selected": bits == 8}'  @click="setBits(8)"> 8 bit  </span>
+          <span class="toggle" :class='{"selected": bits == 16}' @click="setBits(16)"> 16 bit </span>
+          <span class="toggle" :class='{"selected": bits == 32}' @click="setBits(32)"> 32 bit </span>
+          <span class="toggle" :class='{"selected": bits == 64}' @click="setBits(64)"> 64 bit </span>
+        </div>
+      </div>
+      <div>
+        <div class="bit-pattern-wrapper">
+          <!-- this is a mess but I couldn't think of a better way -->
+          <div class="title" style="text-align: center"> Bit Pattern </div>
+          <div class="bit-container" style="display: flex;">
+            <div v-if="bits == 8" style="margin: auto">
+              <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue" @click="toggleBit(index)"> {{ bit }} </span> </span>
+            </div>
+            <div v-else-if="bits == 16" style="margin: auto">
+              <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(0, 8)" @click="toggleBit(index)"> {{ bit }} </span> </span>
+              <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(8, 16)" @click="toggleBit(index + 8)"> {{ bit }} </span> </span>
+            </div>
+            <div v-else-if="bits == 32" style="margin: auto; text-align: center;">
+              <span class="doublebyte">
+                <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(0, 8)" @click="toggleBit(index)"> {{ bit }} </span> </span>
+                <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(8, 16)" @click="toggleBit(index + 8)"> {{ bit }} </span> </span>
+              </span>
+              <span class="doublebyte">
+                <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(16, 24)" @click="toggleBit(index + 16)"> {{ bit }} </span> </span>
+                <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(24, 32)" @click="toggleBit(index + 24)"> {{ bit }} </span> </span>
+              </span>
+            </div>
+            <div v-else-if="bits == 64" style="margin: auto; text-align: center;">
+              <span class="doublebyte">
+                <span class="doublebyte">
+                  <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(0, 8)" @click="toggleBit(index)"> {{ bit }} </span> </span>
+                  <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(8, 16)" @click="toggleBit(index + 8)"> {{ bit }} </span> </span>
+                </span>
+                <span class="doublebyte">
+                  <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(16, 24)" @click="toggleBit(index + 16)"> {{ bit }} </span> </span>
+                  <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(24, 32)" @click="toggleBit(index + 24)"> {{ bit }} </span> </span>
+                </span>
+              </span>
+              <span class="doublebyte">
+                <span class="doublebyte">
+                  <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(32, 40)" @click="toggleBit(index + 32)"> {{ bit }} </span> </span>
+                  <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(40, 48)" @click="toggleBit(index + 40)"> {{ bit }} </span> </span>
+                </span>
+                <span class="doublebyte">
+                  <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(48, 56)" @click="toggleBit(index + 48)"> {{ bit }} </span> </span>
+                  <span class="byte"> <span class="bit" v-for="(bit, index) in paddedBinaryValue.slice(56, 64)" @click="toggleBit(index + 56)"> {{ bit }} </span> </span>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="button-wrapper">
+          <button class="button" data-tooltip="Increment" @click="increment">+</button>
+          <button class="button" data-tooltip="Decrement" @click="decrement">-</button>
+          <button class="button" data-tooltip="Left Shift" @click="signedLeftShift">&lt;&lt;</button>
+          <button class="button" data-tooltip="Signed Right Shift" @click="signedRightShift">&gt;&gt;</button>
+          <button class="button" data-tooltip="Unsigned Right Shift" @click="rightShift">&gt;&gt;&gt;</button>
+          <button class="button" data-tooltip="NOT" @click="not">~</button>
+          <button class="button" data-tooltip="Swap byte order" @click="swap">↔</button>
+        </div>
+
+        <hr>
+
+        <div style="display: flex;">
+          <div style="margin: auto;" class="values-wrapper">
+            <div>
+              <div class="title">Signed Value </div>
+              <div class="input-container">
+                <input type="text" class="input-box" :value="signedValue" @keyup.enter="setSignedValue($event.target.value)" @blur="setSignedValue($event.target.value)" />
+              </div>
+            </div>
+
+            <div>
+              <div class="title">Unsigned Value </div>
+              <div class="input-container">
+                <input type="text" class="input-box" :value="unsignedValue" @keyup.enter="setUnsignedValue($event.target.value)"  @blur="setUnsignedValue($event.target.value)" />
+              </div>
+            </div>
+
+            <div>
+              <div class="title">Binary Value </div>
+              <div class="input-container">
+                <input type="text" class="input-box" :value="binaryValue" @keyup.enter="setBinaryValue($event.target.value)" @blur="setBinaryValue($event.target.value)" />
+              </div>
+            </div>
+
+
+            <div>
+              <div class="title">Hexadecimal Value</div>
+              <div class="input-container">
+                <input type="text" class="input-box" :value="hexValue" @keyup.enter="setHexValue($event.target.value)" @blur="setHexValue($event.target.value)" />
+                <div class="button-container">
+                </div>
+                <div class="button-container">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer>
+      A <a href="https://wizardzines.com">wizard zines</a> project. Inspired by <a href="https://float.exposed">float.exposed</a>
+    </footer>
+  </body>
+</html>
