@@ -7,7 +7,7 @@ const after_enter = (fn) => {
 }
 const app = {
   state: {
-    value: BigInt(51621),
+    value: BigInt(0),
     bits: 16
   },
   get value() {
@@ -15,12 +15,15 @@ const app = {
   },
   set value(val) {
     this.state.value = val;
+    this.setHash();
   },
   get bits() {
     return this.state.bits;
   },
   set bits(n) {
     this.state.bits = n;
+    this.value = this.normalize(this.value);
+    this.setHash();
   },
   get unsignedValue() {
     return this.value;
@@ -58,6 +61,9 @@ const app = {
       this.decrement();
     }
   },
+  get paddedHexValue() {
+    return this.hexValue.padStart(this.bits / 4, "0");
+  },
   get binaryValue() {
     return this.value.toString(2);
   },
@@ -72,11 +78,11 @@ const app = {
   get paddedBinaryValue() {
     return this.binaryValue.padStart(this.bits, "0").split('');
   },
-  normalize(value) {
+  normalize(value, bits) {
     // Make sure `value` fits within the selected bits,
     // and convert signed values to their unsigned counterpart,
     // since normalized values are stored as unsigned values.
-    const maxValue = BigInt(2) ** BigInt(this.bits);
+    const maxValue = BigInt(2) ** BigInt(typeof bits=='undefined' ? this.bits : bits);
     if (value >= BigInt(0)) {
       return value % maxValue;
     } else {
@@ -201,16 +207,45 @@ const app = {
       )
     );
   },
+  getStateFromHash() {
+    const hash = window.location.hash.substring('#0x'.length);
+    const hexRegex = /^[0-9A-Fa-f]+$/;
+
+    if (hexRegex.test(hash)) {
+      const bits = hash.length * 4;
+      const value = this.normalize(BigInt("0x" + hash), bits);
+      return { value, bits};
+    }
+    return null;
+  },
+  onHashChange() {
+    if (this.settingHash) {
+      delete this.settingHash;
+      return;
+    }
+    const state = this.getStateFromHash();
+    if (state) {
+      this.state = state;
+      this.render();
+    }
+  },
+  setHash() {
+    this.settingHash = true;
+    window.location.hash = "0x" + this.paddedHexValue;
+  },
   render_after(fn) {
     fn();
     this.render();
   },
   render() {
+    //console.info('render called');
     document.querySelector(this.container).replaceWith(this.form())
   },
   mount(container) {
     this.container = container;
-    this.render()
+    this.state = this.getStateFromHash() || this.state;
+    this.render();
+    window.addEventListener("hashchange", e => this.onHashChange());
   }
 }
 app.mount('#app');
