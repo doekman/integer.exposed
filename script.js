@@ -122,6 +122,9 @@ const app = {
     const swapped = binary.match(/.{8}/g).reverse().join("");
     this.binaryValue = swapped;
   },
+  clear(alternate) {
+    this.hexValue = alternate ? 'ffffffff' : '0';
+  },
   form() {
     return tag.div({id: "app"},
       tag.div({style: {display: "flex"}},
@@ -161,7 +164,8 @@ const app = {
           tag.button({class: "button", "data-tooltip": "Signed Right Shift", click: e => this.render_after( () => this.signedRightShift() )}, ">>"),
           tag.button({class: "button", "data-tooltip": "Unsigned Right Shift", click: e => this.render_after( () => this.rightShift() )}, ">>>"),
           tag.button({class: "button", "data-tooltip": "NOT", click: e => this.render_after( () => this.not() )}, "~"),
-          tag.button({class: "button", "data-tooltip": "Swap byte order", click: e => this.render_after( () => this.swap() )}, "↔")
+          tag.button({class: "button", "data-tooltip": "Swap byte order", click: e => this.render_after( () => this.swap() )}, "↔"),
+          tag.button({class: "button", "data-tooltip": "Clear", click: e => this.render_after( () => this.clear(e.altKey) )}, "C")
         ),
         tag.hr(),
         tag.div({style: {display: "flex"}},
