@@ -130,7 +130,8 @@ const app = {
       tag.div({style: {display: "flex"}},
         tag.div({style: {margin: "auto"}},
           [8, 16, 32, 64].map( nr_of_bits =>
-            tag.span({ class: ["toggle", this.bits == nr_of_bits ? "selected" : ""], 
+            tag.button({ class: ["toggle", this.bits == nr_of_bits ? "selected" : ""], 
+                id: `tab-${nr_of_bits}`, tabindex: 0,
                 click: e => this.render_after( () => this.bits=nr_of_bits )
               },
               ` ${nr_of_bits} bit `
@@ -146,8 +147,8 @@ const app = {
               // Create an array of length 1, 2, 4 or 8 dummy elements. Only the index is used.
               Array.from(Array(this.bits / 8)).map( (element, byte_index) =>
                 tag.span({class: "byte"}, this.paddedBinaryValue.slice(byte_index * 8, (byte_index * 8) + 8).map( 
-                  (bit_item, bit_index) => tag.span(
-                    { class: "bit", 
+                  (bit_item, bit_index) => tag.button(
+                    { class: "bit", id: `bit-${bit_index + byte_index*8}`, tabindex: 0,
                       click: e => this.render_after( () => this.toggleBit(bit_index + byte_index*8) )
                     },
                     ""+bit_item
@@ -158,14 +159,14 @@ const app = {
           )
         ),
         tag.div({class: "button-wrapper"},
-          tag.button({class: "button", "data-tooltip": "Increment", click: e => this.render_after( () => this.increment() )}, "+"),
-          tag.button({class: "button", "data-tooltip": "Decrement", click: e => this.render_after( () => this.decrement() )}, "-"),
-          tag.button({class: "button", "data-tooltip": "Left Shift", click: e => this.render_after( () => this.signedLeftShift() )}, "<<"),
-          tag.button({class: "button", "data-tooltip": "Signed Right Shift", click: e => this.render_after( () => this.signedRightShift() )}, ">>"),
-          tag.button({class: "button", "data-tooltip": "Unsigned Right Shift", click: e => this.render_after( () => this.rightShift() )}, ">>>"),
-          tag.button({class: "button", "data-tooltip": "NOT", click: e => this.render_after( () => this.not() )}, "~"),
-          tag.button({class: "button", "data-tooltip": "Swap byte order", click: e => this.render_after( () => this.swap() )}, "↔"),
-          tag.button({class: "button", "data-tooltip": "Clear", click: e => this.render_after( () => this.clear(e.altKey) )}, "C")
+          tag.button({class: "button", "id": "button-1", "data-tooltip": "Increment", click: e => this.render_after( () => this.increment() )}, "+"),
+          tag.button({class: "button", "id": "button-2", "data-tooltip": "Decrement", click: e => this.render_after( () => this.decrement() )}, "-"),
+          tag.button({class: "button", "id": "button-3", "data-tooltip": "Left Shift", click: e => this.render_after( () => this.signedLeftShift() )}, "<<"),
+          tag.button({class: "button", "id": "button-4", "data-tooltip": "Signed Right Shift", click: e => this.render_after( () => this.signedRightShift() )}, ">>"),
+          tag.button({class: "button", "id": "button-5", "data-tooltip": "Unsigned Right Shift", click: e => this.render_after( () => this.rightShift() )}, ">>>"),
+          tag.button({class: "button", "id": "button-6", "data-tooltip": "NOT", click: e => this.render_after( () => this.not() )}, "~"),
+          tag.button({class: "button", "id": "button-7", "data-tooltip": "Swap byte order", click: e => this.render_after( () => this.swap() )}, "↔"),
+          tag.button({class: "button", "id": "button-8", "data-tooltip": "Clear", click: e => this.render_after( () => this.clear(e.altKey) )}, "C")
         ),
         tag.hr(),
         tag.div({style: {display: "flex"}},
@@ -173,8 +174,8 @@ const app = {
             tag.div(
               tag.div({class: "title"}, "Signed Value"),
               tag.div({class: "input-container"},
-                tag.input({ type: "text", class: "input-box", value: this.signedValue,
-                  blur: e => this.render_after( () => this.signedValue = e.target.value  ),
+                tag.input({ type: "text", id: "input-1", class: "input-box", value: this.signedValue,
+                  change: e => this.render_after( () => this.signedValue = e.target.value  ),
                   keyup: after_enter( (e) => this.render_after( () => this.signedValue = e.target.value))
                 })
               )
@@ -182,8 +183,8 @@ const app = {
             tag.div(
               tag.div({class: "title"}, "Unsigned Value"),
               tag.div({class: "input-container"},
-                tag.input({type: "text", class: "input-box", value: this.unsignedValue,
-                  blur: e => this.render_after( () => this.unsignedValue = e.target.value  ),
+                tag.input({type: "text", id: "input-2", class: "input-box", value: this.unsignedValue,
+                  change: e => this.render_after( () => this.unsignedValue = e.target.value  ),
                   keyup: after_enter( (e) => this.render_after( () => this.unsignedValue = e.target.value))
                 })
               )
@@ -191,8 +192,8 @@ const app = {
             tag.div(
               tag.div({class: "title"}, "Binary Value"),
               tag.div({class: "input-container"},
-                tag.input({type: "text", class: "input-box", value: this.binaryValue,
-                  blur: e => this.render_after( () => this.binaryValue = e.target.value  ),
+                tag.input({type: "text", id: "input-3", class: "input-box", value: this.binaryValue,
+                  change: e => this.render_after( () => this.binaryValue = e.target.value  ),
                   keyup: after_enter( (e) => this.render_after( () => this.binaryValue = e.target.value))
                 })
               )
@@ -200,8 +201,8 @@ const app = {
             tag.div(
               tag.div({class: "title"}, "Hexadecimal Value"),
               tag.div({class: "input-container"},
-                tag.input({type: "text", class: "input-box", value: this.hexValue,
-                  blur: e => this.render_after( () => this.hexValue = e.target.value  ),
+                tag.input({type: "text", id: "input-4", class: "input-box", value: this.hexValue,
+                  change: e => this.render_after( () => this.hexValue = e.target.value  ),
                   keyup: after_enter( (e) => this.render_after( () => this.hexValue = e.target.value))
                 })
               )
@@ -243,7 +244,14 @@ const app = {
   },
   render() {
     //console.info('render called');
-    document.querySelector(this.container).replaceWith(this.form())
+    // Defer rendering, so we know activeElement in all cases (blur/change on text-inputs)
+    window.setTimeout( () => {
+      let activeElementId = document.activeElement?.id;
+      document.querySelector(this.container).replaceWith(this.form())
+      if (activeElementId) {
+        document.getElementById(activeElementId)?.focus();
+      }
+    });
   },
   mount(container) {
     this.container = container;
