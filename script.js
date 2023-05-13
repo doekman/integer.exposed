@@ -89,9 +89,10 @@ const app = {
       return (value + maxValue) % maxValue;
     }
   },
-  toggleBit(index) {
+  toggleBitAsHex(index) {
     const bitValue = BigInt(2) ** BigInt(this.bits - index - 1);
-    this.value = this.normalize(this.value ^ bitValue);
+    const value = this.normalize(this.value ^ bitValue);
+    return value.toString(16).padStart(this.bits / 4, "0");
   },
   increment() {
     this.value = this.normalize(this.value + BigInt(1));
@@ -147,9 +148,9 @@ const app = {
               // Create an array of length 1, 2, 4 or 8 dummy elements. Only the index is used.
               Array.from(Array(this.bits / 8)).map( (element, byte_index) =>
                 tag.span({class: "byte"}, this.paddedBinaryValue.slice(byte_index * 8, (byte_index * 8) + 8).map( 
-                  (bit_item, bit_index) => tag.button(
+                  (bit_item, bit_index) => tag.a(
                     { class: "bit", id: `bit-${bit_index + byte_index*8}`, tabindex: 0,
-                      click: e => this.render_after( () => this.toggleBit(bit_index + byte_index*8) )
+                      href: `#0x${this.toggleBitAsHex(bit_index + byte_index*8)}`
                     },
                     ""+bit_item
                   )
