@@ -123,6 +123,35 @@ const app = {
     const swapped = binary.match(/.{8}/g).reverse().join("");
     this.binaryValue = swapped;
   },
+  run_fx() {
+    // https://mastodon.social/@dukoid/110403616690465482
+    // Would you mind adding a button that changes the value to 3x+1 if there are no trailing zeros, 
+    // otherwise shifts right until there are no trailing zeros?
+    // I always wanted to take a look at what the Collatz Cojecture looks in binary O:)
+    const predefined_f = (value, bits) => {
+      if (value != 0n) {
+        if ((value & 1n) != 0n) {
+          value = (value * 3n) + 1n;
+        }
+        else {
+          while ((value & 1n) == 0n) {
+            value = value / 2n
+          }
+        }
+      }
+      return value
+    }
+    if (!localStorage.fx) {
+      localStorage.fx = String(predefined_f);
+    }
+    try {
+      const the_f_in_fx = eval(localStorage.fx);
+      this.value = this.normalize(the_f_in_fx(this.value, this.bits));
+    }
+    catch(error) {
+      console.error("Error executing custom code from localStorage:", error);
+    }
+  },
   clear(alternate) {
     this.hexValue = alternate ? 'ffffffff' : '0';
   },
@@ -167,7 +196,8 @@ const app = {
           tag.button({class: "button", "id": "button-5", "data-tooltip": "Unsigned Right Shift", click: e => this.render_after( () => this.rightShift() )}, ">>>"),
           tag.button({class: "button", "id": "button-6", "data-tooltip": "NOT", click: e => this.render_after( () => this.not() )}, "~"),
           tag.button({class: "button", "id": "button-7", "data-tooltip": "Swap byte order", click: e => this.render_after( () => this.swap() )}, "↔"),
-          tag.button({class: "button", "id": "button-8", "data-tooltip": "Clear", click: e => this.render_after( () => this.clear(e.altKey) )}, "C")
+          tag.button({class: "button", "id": "button-8", "data-tooltip": "Programmable; see localStorage('fx')", click: e => this.render_after( () => this.run_fx() )}, "fx"),
+          tag.button({class: "button", "id": "button-9", "data-tooltip": "Clear", click: e => this.render_after( () => this.clear(e.altKey) )}, "C")
         ),
         tag.hr(),
         tag.div({style: {display: "flex"}},
